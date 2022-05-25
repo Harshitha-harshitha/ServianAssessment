@@ -9,6 +9,7 @@ Pre-requisites:
         > Azure App Service 
         
         > Postgre SQL
+	
  
 Process: 
 
@@ -26,6 +27,7 @@ Process:
         
         7. Render the site 
         
+	
  
         
         
