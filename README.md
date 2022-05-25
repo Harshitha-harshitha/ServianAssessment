@@ -25,7 +25,7 @@ Process:
         
         6. Deploy the Docker container in Azure App Service(Linux) using the above Docker Image by CD pipeline
         
-        7. Create a postgres DB and connect app to the DB with connection string 
+        7. Create a postgres DB with replica for high availability 
 	
 	8. Render the site 
         
