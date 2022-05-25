@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "registryName": {
+      "value": "happymeacr"
+    },
+    "registrySku": {
+      "value": "Standard"
+    },
+    "siteName": {
+      "value": "happyme26"
+    },
+    "administratorLogin": {
+      "value": "adminuser"
+    },
+    "administratorLoginPassword": {
+      "value": "P@ssw0rd@123"
+    },
+    "databaseSkuCapacity": {
+      "value": 1
+    },
+    "databaseSkuName": {
+      "value": "B_Gen5_1"
+    },
+    "databaseSkuSizeMB": {
+      "value": 51200
+    },
+    "databaseSkuTier": {
+      "value": "Basic"
+    },
+    "databaseskuFamily": {
+      "value": "Gen5"
+    },
+    "postgresqlVersion": {
+      "value": 11
+    },
+     "replicaName": {
+      "value": "Replicapghappyme"
+    }
+  }
+}

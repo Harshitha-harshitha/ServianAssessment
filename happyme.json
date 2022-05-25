@@ -1,0 +1,244 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "registryName": {
+            "minLength": 5,
+            "maxLength": 50,
+            "type": "string",
+            "metadata": {
+                "description": "The name of the container registry."
+            }
+        },
+        "registrySku": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "metadata": {
+                "description": "The SKU of the container registry."
+            }
+        },
+        "siteName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of azure web app"
+            }
+        },  
+        "replicaName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of azure web app"
+            }
+        },
+        "administratorLogin": {
+            "type": "string",
+            "minLength": 1,
+            "metadata": {
+                "description": "Database administrator login name"
+            }
+        },
+        "administratorLoginPassword": {
+            "type": "securestring",
+            "minLength": 8,
+            "maxLength": 128,
+            "metadata": {
+                "description": "Database administrator password"
+            }
+        },
+        "databaseSkuCapacity": {
+            "type": "int",
+            "defaultValue": 1,
+            "metadata": {
+                "description": "Azure database for PostgreSQL compute capacity in vCores (1, 2, 4, 8, 16, 32)"
+            }
+        },
+        "databaseSkuName": {
+            "type": "string",
+            "defaultValue": "B_Gen5_1",
+            "metadata": {
+                "description": "Azure database for PostgreSQL sku name "
+            }
+        },
+        "databaseSkuSizeMB": {
+            "type": "int",
+            "defaultValue": 51200,
+            "metadata": {
+                "description": "Azure database for PostgreSQL Sku Size "
+            }
+        },
+        "databaseSkuTier": {
+            "type": "string",
+            "defaultValue": "Basic",
+            "allowedValues": [
+                "GeneralPurpose",
+                "MemoryOptimized",
+                "Basic"
+            ],
+            "metadata": {
+                "description": "Azure database for PostgreSQL pricing tier"
+            }
+        },
+        "databaseskuFamily": {
+            "type": "string",
+            "defaultValue": "Gen5",
+            "metadata": {
+                "description": "Azure database for PostgreSQL sku family"
+            }
+        },
+        "postgresqlVersion": {
+            "type": "int",
+            "defaultValue": "11",
+            "metadata": {
+                "description": "PostgreSQL version"
+            }
+        }
+    },
+    "variables": {
+        "hostingPlanName": "[concat(parameters('siteName'), 'serviceplan')]",
+        "location": "[resourceGroup().location]",
+        "databaseName": "[concat(parameters('siteName'), 'database')]",
+        "serverName": "[concat(parameters('siteName'), 'pgserver')]",
+        "SQLUserName": "[concat(parameters('administratorLogin'),'@',variables('serverName'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.ContainerRegistry/registries",
+            "name": "[parameters('registryName')]",
+            "apiVersion": "2017-10-01",
+            "sku": {
+                "name": "[parameters('registrySku')]"
+            },
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "Container Registry",
+                "container.registry": "[parameters('registryName')]"
+            },
+            "properties": {
+                "adminUserEnabled": "true"
+            }
+        },
+        {
+            "apiVersion": "2016-03-01",
+            "name": "[parameters('siteName')]",
+            "type": "Microsoft.Web/sites",
+            "properties": {
+                "name": "[parameters('siteName')]",
+                "kind": "app,linux,container",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
+                            "value": "false"
+                        }
+                    ],
+                    "appCommandLine": "",
+                    "linuxFxVersion": "DOCKER|testassess.azurecr.io/harshitha-harshitha/techchallengeapp"
+                },
+                "serverFarmId": "[variables('hostingPlanName')]",
+                "hostingEnvironment": ""
+            },
+             "resources": [
+                {
+                    "name": "appsettings",
+                    "type": "config",
+                    "apiVersion": "2020-06-01",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', parameters('siteName'))]"
+                    ],
+                    "comments": "This are the generated settings for the SQL connectionstring",
+                    "properties": {
+                        "SQL_CONN": "[concat('postgresql://', variables('SQLUserName'),':',parameters('administratorLoginPassword'),'@',reference(resourceId('Microsoft.DBforPostgreSQL/servers',variables('serverName'))).fullyQualifiedDomainName,':5432/',variables('databaseName'))]",
+                        "WEBSITES_ENABLE_APP_SERVICE_STORAGE": "true"
+                    }
+                }
+            ],
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Web/serverfarms/', variables('hostingPlanName'))]"
+            ]
+        },
+        {
+            "apiVersion": "2016-09-01",
+            "name": "[variables('hostingPlanName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "name": "[variables('hostingPlanName')]",
+                "workerSizeId": 0,
+                "reserved": true,
+                "numberOfWorkers": "1",
+                "hostingEnvironment": ""
+            },
+            "sku": {
+                "Tier": "Standard",
+                "Name": "S1"
+            },
+            "kind": "linux"
+        },
+        {
+            "type": "Microsoft.DBforPostgreSQL/servers",
+            "apiVersion": "2017-12-01",
+            "name": "[variables('serverName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "[parameters('databaseSkuName')]",
+                "tier": "[parameters('databaseSkuTier')]",
+                "capacity": "[parameters('databaseSkuCapacity')]",
+                "size": "[parameters('databaseSkuSizeMB')]",
+                "family": "[parameters('databaseskuFamily')]"
+            },
+            "resources": [
+                {
+                    "type": "firewallrules",
+                    "apiVersion": "2017-12-01",
+                    "name": "[concat(variables('serverName'),'firewall')]",
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.DBforPostgreSQL/servers',variables('serverName'))]"
+                    ],
+                    "properties": {
+                        "startIpAddress": "0.0.0.0",
+                        "endIpAddress": "255.255.255.255"
+                    }
+                },
+                {
+                    "type": "databases",
+                    "apiVersion": "2017-12-01",
+                    "name": "[variables('databaseName')]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.DBforPostgreSQL/servers',variables('serverName'))]"
+                    ],
+                    "properties": {
+                        "charset": "utf8",
+                        "collation": "English_United States.1252"
+                    }
+                },
+                        {
+            "type": "Microsoft.DBforPostgreSQL/servers",
+            "apiVersion": "2017-12-01",
+            "name": "[parameters('replicaName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "[parameters('databaseSkuName')]",
+                "tier": "[parameters('databaseSkuTier')]",
+                "family": "[parameters('databaseskuFamily')]",
+                "capacity": "[parameters('databaseSkuCapacity')]",
+                "size": "[parameters('databaseSkuSizeMB')]"
+            },
+            "properties": {
+                "createMode": "Replica",
+                "sourceServerId": "[resourceId('Microsoft.DBforPostgreSQL/servers', variables('serverName'))]"
+            },
+            "dependsOn": [
+                        "[resourceId('Microsoft.DBforPostgreSQL/servers',variables('serverName'))]"
+            ]
+        }
+            ],
+            "properties": {
+                "version": "[parameters('postgresqlVersion')]",
+                "administratorLogin": "[parameters('administratorLogin')]",
+                "administratorLoginPassword": "[parameters('administratorLoginPassword')]",
+                "storageMB": "[parameters('databaseSkuSizeMB')]"
+            }
+        }
+    ]
+}
