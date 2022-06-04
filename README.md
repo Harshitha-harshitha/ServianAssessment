@@ -34,7 +34,8 @@ CI/CD using azure devops screenshots:
  CD: ![image](https://user-images.githubusercontent.com/48629269/172023546-4abcbc9e-7c75-41a5-b158-43096924e7c9.png)
 
 Application hosting in the Azure web app: 
- ![image](https://user-images.githubusercontent.com/48629269/172023432-aed7a483-3fc1-46e0-bff1-1d4953601716.png)
+ ![image](https://user-images.githubusercontent.com/48629269/172023639-26346bfb-eb91-462d-9820-9f3fc3bcdcd1.png)
+
 
 	
         
