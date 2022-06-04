@@ -28,7 +28,14 @@ Process:
         7. Create a postgres DB with replica for high availability 
 	
 	8. Render the site 
-        
+
+CI/CD using azure devops screenshots: 
+ CI : ![image](https://user-images.githubusercontent.com/48629269/172023484-456ddfa1-3252-4c61-a84a-a2d3228fed75.png)
+ CD: ![image](https://user-images.githubusercontent.com/48629269/172023546-4abcbc9e-7c75-41a5-b158-43096924e7c9.png)
+
+Application hosting in the Azure web app: 
+ ![image](https://user-images.githubusercontent.com/48629269/172023432-aed7a483-3fc1-46e0-bff1-1d4953601716.png)
+
 	
         
         
